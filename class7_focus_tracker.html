@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0f0e17"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Focus Tracker"/>
+<title>Class 7 — Focus Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#0f0e17;--bg2:#1a1927;--bg3:#221f33;
+  --border:#2e2b45;--border2:#3d3960;
+  --text:#eeeaf8;--text2:#a09bc2;--text3:#605c7e;
+  --accent:#7c6ff7;--green:#22d3a0;--amber:#fbbf24;--red:#f87171;
+  --radius:12px;--rsm:8px;--font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--bg);font-family:var(--font);font-size:15px;color:var(--text);}
+body{min-height:100vh;padding-bottom:5rem;}
+.topbar{background:linear-gradient(135deg,#3d35b5 0%,#5b3fa8 100%);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.5);}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-icon{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.tb-title{font-size:16px;font-weight:800;color:#fff;}
+.tb-sub{font-size:11px;color:rgba(255,255,255,0.65);margin-top:1px;}
+.ov-chip{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:800;color:#fff;}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.metric{background:var(--bg2);padding:12px 8px;text-align:center;}
+.mval{font-size:22px;font-weight:800;}
+.mlbl{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;}
+.main{max-width:640px;margin:0 auto;padding:14px 12px;}
+.sec-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.stabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.stab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border2);font-size:12px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--text2);transition:all 0.15s;font-family:var(--font);}
+.stab:hover{border-color:var(--accent);color:var(--text);}
+.stab.active{color:#fff;border-color:transparent;box-shadow:0 3px 12px rgba(0,0,0,0.4);}
+.ctabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.ctab{padding:4px 11px;border-radius:var(--rsm);border:1.5px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;background:var(--bg2);color:var(--text3);transition:all 0.12s;position:relative;font-family:var(--font);}
+.ctab:hover{border-color:var(--border2);color:var(--text2);}
+.ctab.active{font-weight:700;}
+.pip{width:7px;height:7px;border-radius:50%;position:absolute;top:2px;right:2px;}
+.panel{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--bg3);}
+.ptitle{font-size:14px;font-weight:700;color:var(--text);}
+.ptag{font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;}
+.cscore{font-size:18px;font-weight:800;}
+.pbar{height:5px;background:var(--border);}
+.pfill{height:100%;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);}
+.tlist{padding:8px;display:flex;flex-direction:column;gap:4px;}
+.trow{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rsm);border:1.5px solid var(--border);transition:all 0.1s;background:var(--bg2);}
+.trow:active{transform:scale(0.99);}
+.trow.t-done{border-color:#134e3a;background:#0d2e24;}
+.trow.t-study{border-color:#4a3500;background:#2a1f00;}
+.tnum{font-size:10px;color:var(--text3);min-width:20px;font-weight:700;}
+.tname{flex:1;font-size:13px;color:var(--text2);font-weight:500;line-height:1.3;}
+.trow.t-done .tname{color:#6ee7b7;}
+.trow.t-study .tname{color:#fcd34d;}
+.tbtn{font-size:10px;padding:4px 10px;border-radius:12px;border:none;cursor:pointer;white-space:nowrap;font-weight:700;font-family:var(--font);transition:all 0.1s;}
+.s0{background:#3b0d0d;color:#f87171;}
+.s1{background:#3b2700;color:#fbbf24;}
+.s2{background:#0d3b2a;color:#34d399;}
+.addrow{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);background:var(--bg3);}
+.addrow input{flex:1;padding:7px 12px;border:1.5px solid var(--border2);border-radius:var(--rsm);font-size:13px;font-weight:500;background:var(--bg);color:var(--text);outline:none;font-family:var(--font);}
+.addrow input:focus{border-color:var(--accent);}
+.addrow input::placeholder{color:var(--text3);}
+.addrow button{padding:7px 14px;border-radius:var(--rsm);border:1.5px solid var(--border2);font-size:12px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--text2);font-family:var(--font);}
+.addrow button:hover{border-color:var(--accent);color:var(--accent);}
+.chart-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;}
+.clbl{font-size:11px;font-weight:700;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);font-weight:600;}
+.ld{width:10px;height:10px;border-radius:3px;}
+.enc-box{border-radius:var(--radius);padding:12px 16px;font-size:13px;font-weight:600;line-height:1.6;border:1.5px solid;}
+#page-overall{display:none;}
+.ov-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.ov-title{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;}
+.subj-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+.subj-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;}
+.sc-name{font-size:12px;font-weight:700;margin-bottom:8px;}
+.sc-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.sc-fill{height:100%;border-radius:4px;transition:width 0.4s ease;}
+.sc-pct{font-size:20px;font-weight:800;}
+.sc-done{font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:99;}
+.bnav-btn{flex:1;padding:12px 4px 10px;border:none;background:transparent;cursor:pointer;font-family:var(--font);font-size:10px;font-weight:700;color:var(--text3);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color 0.15s;}
+.bnav-btn.active{color:var(--accent);}
+.bnav-icon{font-size:18px;line-height:1;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-icon">&#11088;</div>
+    <div><div class="tb-title">Focus Tracker</div><div class="tb-sub">Class 7 — Term II Exam</div></div>
+  </div>
+  <div class="ov-chip" id="ov-chip">0%</div>
+</div>
+<div class="metrics" id="metrics"></div>
+
+<div id="page-tracker">
+<div class="main">
+  <div class="sec-lbl">Subject</div>
+  <div class="stabs" id="stabs"></div>
+  <div class="sec-lbl">Chapter</div>
+  <div class="ctabs" id="ctabs"></div>
+  <div class="panel">
+    <div class="panel-hdr">
+      <div><div class="ptitle" id="ptitle">—</div><div class="ptag" id="ptag">Tap a button to update progress</div></div>
+      <div class="cscore" id="cscore">0%</div>
+    </div>
+    <div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+    <div class="tlist" id="tlist"></div>
+    <div class="addrow">
+      <input id="newt" placeholder="Add a topic..." maxlength="70"/>
+      <button onclick="addT()">+ Add</button>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="clbl" id="clbl">Chapter overview</div>
+    <div style="position:relative;height:160px;"><canvas id="ch"></canvas></div>
+    <div class="legend">
+      <div class="li"><div class="ld" style="background:#22d3a0"></div>Done</div>
+      <div class="li"><div class="ld" style="background:#fbbf24"></div>Studying</div>
+      <div class="li"><div class="ld" style="background:#f87171"></div>Not yet</div>
+    </div>
+  </div>
+  <div class="enc-box" id="enc"></div>
+</div>
+</div>
+
+<div id="page-overall">
+<div class="main">
+  <div class="ov-header"><span class="ov-title">All Subjects Overview</span></div>
+  <div class="subj-cards" id="subj-cards"></div>
+  <div class="chart-card">
+    <div class="clbl">Overall progress — all 6 subjects</div>
+    <div style="position:relative;height:220px;"><canvas id="ov-ch"></canvas></div>
+    <div class="legend" style="margin-top:10px;">
+      <div class="li"><div class="ld" style="background:#22d3a0"></div>Done</div>
+      <div class="li"><div class="ld" style="background:#fbbf24"></div>Studying</div>
+      <div class="li"><div class="ld" style="background:#f87171"></div>Not yet</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="bottom-nav">
+  <button class="bnav-btn active" id="nav-tracker" onclick="showPage('tracker')">
+    <span class="bnav-icon">&#128218;</span>Study
+  </button>
+  <button class="bnav-btn" id="nav-overall" onclick="showPage('overall')">
+    <span class="bnav-icon">&#128202;</span>Overall
+  </button>
+</div>
+
+<script>
+const SUBJECTS={
+  'English':{color:'#60a5fa',chapters:[
+    {name:'Prose',topics:['A Homage to Brave Soldiers','The Tunnel','Animals, Birds and Dr. Dolittle','Travel']},
+    {name:'Poem',topics:['My Dear Soldiers','Paper Boats']},
+    {name:'Supplementary',topics:['Conquering the Summit','North South East West','Say the Right Thing']},
+    {name:'Composition',topics:['Poster Making','Analytical Paragraph (Pie Chart)','Descriptive Writing','Diary Writing','Letter Writing (Informal)']},
+    {name:'Grammar',topics:['Subject Verb Agreement','Pronouns','Adverbs','Direct Indirect Speech','Simple Compound Complex Sentences','Clauses','Phrases','Editing & Error Correction']},
+  ]},
+  'Maths':{color:'#a78bfa',chapters:[
+    {name:'GP Part 2',topics:['Geometric Twins','Operations With Integers','Another Peek Beyond The Point','Connecting The Dots','Constructions And Tilings','Finding The Unknown']},
+    {name:'GP Part 1',topics:['A Tale Of Three Intersecting Lines','Working With Fractions','Large Numbers Around Us']},
+  ]},
+  'Science':{color:'#34d399',chapters:[
+    {name:'Physics',topics:['Heat Transfer In Nature','Light: Shadows And Reflections']},
+    {name:'Chemistry',topics:['Physical and Chemical Changes','The World of Metals and Non-Metals','Introduction to Ions and Chemical Formulae']},
+    {name:'Biology',topics:['Adolescence - A Stage of Growth and Change','Life Processes in Animals','Life Processes in Plants']},
+  ]},
+  'Social':{color:'#fb923c',chapters:[
+    {name:'Geography',topics:['Climates Of India + Map + Diagram','Understanding Weather + Diagram','India And Her Neighbours + Map']},
+    {name:'History',topics:['The Age Of Gupta Era + Map','Empires And Kingdoms: 6th-10th Centuries + Map','Turning Tides: 11th & 12th Centuries']},
+    {name:'Civics',topics:['The State, The Government, And You']},
+    {name:'Economics',topics:['Banks And The Magic Of Finance','Barter To Money']},
+    {name:'FVV',topics:['Understanding Tamilnadu And Chennai Governance']},
+  ]},
+  'Tamil II':{color:'#f472b6',chapters:[
+    {name:'Iyalkal',topics:['Iyal 3 — Urai, Seyyul, Ilakkanam, Thuranapadam','Iyal 5 — Urai, Seyyul, Ilakkanam, Thuranapadam','Iyal 6 — Urai, Seyyul, Ilakkanam, Thuranapadam','Iyal 7 — Urai, Seyyul, Ilakkanam, Thuranapadam','Iyal 8 — Ilakkanam only']},
+    {name:'Writing',topics:['Kadidham (Pothu)','Kandurai (Pothu)','Patthi Vina (Pothu)','Kaatchiyai kandu kavinura ezhuthuka']},
+  ]},
+  'Hindi III':{color:'#fcd34d',chapters:[
+    {name:'Lessons',topics:['Ghar ke upkaran ki dukan mein','Awaasiya Vidyalay mein','Vidya Grahan']},
+    {name:'Grammar',topics:['Lingam Term1 (1-8) & Term2 (1-8)','Vachan Term1 (1-8) & Term2 (1-8)','Vilom Term1 (1-8) & Term2 (1-8)','Visheshan Exercise II','Muhavare I (1-5) & II (1-5)','Anuvad I (1-10) & II (1-10)','Sankhya (41-60)']},
+    {name:'Writing',topics:['Patra II','Vigyapan & Poster II','Samvashan Term1 (1-8) & Term2 (1-8)']},
+  ]},
+};
+const SKEYS=Object.keys(SUBJECTS);
+const ENC=[
+  {t:'Nothing done yet! Every big journey starts with one small step. Open that book right now!',c:'#2d0f0f',b:'#7f1d1d',tx:'#fca5a5'},
+  {t:'10% done! You started — that is the hardest part. Keep going, you are doing great!',c:'#2d1a00',b:'#78350f',tx:'#fcd34d'},
+  {t:'20% done! You are building a great study habit. Every topic you tick off counts!',c:'#2d1a00',b:'#78350f',tx:'#fcd34d'},
+  {t:'30% done! Almost one-third finished. Your hard work is really showing now!',c:'#2d1a00',b:'#78350f',tx:'#fcd34d'},
+  {t:'40% done! Nearly halfway there. You are doing amazing — do not stop now!',c:'#1c2000',b:'#365314',tx:'#86efac'},
+  {t:'50% done! Exactly halfway! You have proven you can do this. Finish what you started!',c:'#1c2000',b:'#365314',tx:'#86efac'},
+  {t:'60% done! More than half complete. The finish line is getting closer every day!',c:'#1c2000',b:'#365314',tx:'#86efac'},
+  {t:'70% done! Great work! You are in the home stretch now. Keep this energy up!',c:'#0d2e24',b:'#065f46',tx:'#6ee7b7'},
+  {t:'80% done! Almost there! Just a little more and everything will be covered!',c:'#0d2e24',b:'#065f46',tx:'#6ee7b7'},
+  {t:'90% done! SO close! You should be really proud — one final push and you are done!',c:'#0d2e24',b:'#065f46',tx:'#6ee7b7'},
+  {t:'100% DONE! Every single topic covered! Walk into that exam with full confidence. YOU ARE READY!',c:'#0d2e24',b:'#059669',tx:'#34d399'},
+];
+const SAVE_KEY='class7_dark_v1';
+function initState(){
+  const saved=localStorage.getItem(SAVE_KEY);
+  if(saved){try{return JSON.parse(saved);}catch(e){}}
+  const s={};
+  SKEYS.forEach(sk=>{s[sk]=SUBJECTS[sk].chapters.map(ch=>({name:ch.name,topics:ch.topics.map(t=>({name:t,status:0}))}));});
+  return s;
+}
+let state=initState(),aS=SKEYS[0],aC=0,chartInst=null,ovChartInst=null;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){}}
+const tScore=t=>t.status===2?100:t.status===1?50:0;
+const chapScore=(sk,ci)=>{const ts=state[sk][ci].topics;return ts.length?Math.round(ts.reduce((a,t)=>a+tScore(t),0)/ts.length):0;};
+const subjScore=sk=>Math.round(state[sk].reduce((a,_,i)=>a+chapScore(sk,i),0)/state[sk].length);
+const overallScore=()=>Math.round(SKEYS.reduce((a,sk)=>a+subjScore(sk),0)/SKEYS.length);
+const totalDone=()=>SKEYS.reduce((a,sk)=>a+state[sk].reduce((b,ch)=>b+ch.topics.filter(t=>t.status===2).length,0),0);
+const totalAll=()=>SKEYS.reduce((a,sk)=>a+state[sk].reduce((b,ch)=>b+ch.topics.length,0),0);
+const pipCol=sc=>sc===0?'#f87171':sc<60?'#fbbf24':'#22d3a0';
+const scoreCol=sc=>sc<40?'#f87171':sc<70?'#fbbf24':'#22d3a0';
+
+function showPage(p){
+  document.getElementById('page-tracker').style.display=p==='tracker'?'block':'none';
+  document.getElementById('page-overall').style.display=p==='overall'?'block':'none';
+  document.getElementById('nav-tracker').classList.toggle('active',p==='tracker');
+  document.getElementById('nav-overall').classList.toggle('active',p==='overall');
+  if(p==='overall')renderOverall();
+}
+
+function render(){
+  const ov=overallScore(),td=totalDone(),ta=totalAll();
+  document.getElementById('ov-chip').textContent=ov+'%';
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="mval" style="color:${scoreCol(ov)}">${ov}%</div><div class="mlbl">Overall</div></div>
+    <div class="metric"><div class="mval" style="color:#22d3a0">${td}</div><div class="mlbl">Done</div></div>
+    <div class="metric"><div class="mval" style="color:#605c7e">${ta-td}</div><div class="mlbl">Left</div></div>`;
+  const col=SUBJECTS[aS].color;
+  document.getElementById('stabs').innerHTML=SKEYS.map(sk=>{
+    const sc=subjScore(sk),isA=sk===aS,c=SUBJECTS[sk].color;
+    return `<button class="stab${isA?' active':''}" style="${isA?'background:'+c+';border-color:'+c:'color:#a09bc2'}" onclick="swS('${sk}')">${sk} <span style="opacity:0.75;font-size:10px;font-weight:700">${sc}%</span></button>`;
+  }).join('');
+  document.getElementById('ctabs').innerHTML=state[aS].map((ch,i)=>{
+    const sc=chapScore(aS,i),isA=i===aC;
+    return `<button class="ctab${isA?' active':''}" style="${isA?'border-color:'+col+';color:'+col:''}" onclick="swC(${i})">${ch.name}<span class="pip" style="background:${pipCol(sc)}"></span></button>`;
+  }).join('');
+  const ch=state[aS][aC],sc=chapScore(aS,aC);
+  document.getElementById('ptitle').textContent=ch.name;
+  document.getElementById('ptag').textContent=aS+' — Tap any button to update';
+  const b=document.getElementById('cscore');b.textContent=sc+'%';b.style.color=scoreCol(sc);
+  const f=document.getElementById('pfill');f.style.width=sc+'%';f.style.background=scoreCol(sc);
+  document.getElementById('tlist').innerHTML=ch.topics.map((t,i)=>{
+    const rc=t.status===2?'t-done':t.status===1?'t-study':'';
+    return `<div class="trow ${rc}"><span class="tnum">${String(i+1).padStart(2,'0')}</span><span class="tname">${t.name}</span><button class="tbtn s${t.status}" onclick="cycleT(${i})">${['Not yet','Studying','Done'][t.status]}</button></div>`;
+  }).join('');
+  document.getElementById('clbl').textContent=aS+' — chapter breakdown';
+  const labels=state[aS].map(c=>c.name.length>14?c.name.slice(0,14)+'…':c.name);
+  const done=state[aS].map((_,i)=>{const ts=state[aS][i].topics;return ts.length?Math.round(ts.filter(t=>t.status===2).length/ts.length*100):0;});
+  const part=state[aS].map((_,i)=>{const ts=state[aS][i].topics;return ts.length?Math.round(ts.filter(t=>t.status===1).length/ts.length*100):0;});
+  const none=state[aS].map((_,i)=>{const ts=state[aS][i].topics;return ts.length?Math.round(ts.filter(t=>t.status===0).length/ts.length*100):0;});
+  if(chartInst)chartInst.destroy();
+  chartInst=new Chart(document.getElementById('ch'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Done',data:done,backgroundColor:'#22d3a0',borderRadius:4,stack:'s'},
+      {label:'Studying',data:part,backgroundColor:'#fbbf24',stack:'s'},
+      {label:'Not yet',data:none,backgroundColor:'#f87171',stack:'s'},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw}%`},backgroundColor:'#1a1927',titleColor:'#eeeaf8',bodyColor:'#a09bc2'}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#605c7e',font:{size:11,family:'Nunito'}},grid:{display:false},border:{color:'#2e2b45'}},
+        y:{stacked:true,min:0,max:100,ticks:{callback:v=>v+'%',color:'#605c7e',font:{size:10,family:'Nunito'}},grid:{color:'#1a1927'},border:{color:'#2e2b45'}}
+      }
+    }
+  });
+  const r=ENC[Math.min(Math.floor(sc/10),10)];
+  const el=document.getElementById('enc');
+  el.style.background=r.c;el.style.borderColor=r.b;el.style.color=r.tx;
+  el.textContent='⭐ '+r.t;
+}
+
+function renderOverall(){
+  document.getElementById('subj-cards').innerHTML=SKEYS.map(sk=>{
+    const sc=subjScore(sk),col=SUBJECTS[sk].color;
+    const td=state[sk].reduce((a,ch)=>a+ch.topics.filter(t=>t.status===2).length,0);
+    const ta=state[sk].reduce((a,ch)=>a+ch.topics.length,0);
+    return `<div class="subj-card">
+      <div class="sc-name" style="color:${col}">${sk}</div>
+      <div class="sc-bar"><div class="sc-fill" style="width:${sc}%;background:${col}"></div></div>
+      <div class="sc-pct" style="color:${scoreCol(sc)}">${sc}%</div>
+      <div class="sc-done">${td} of ${ta} done</div>
+    </div>`;
+  }).join('');
+  if(ovChartInst)ovChartInst.destroy();
+  ovChartInst=new Chart(document.getElementById('ov-ch'),{
+    type:'bar',
+    data:{labels:SKEYS,datasets:[
+      {label:'Done %',data:SKEYS.map(sk=>subjScore(sk)),backgroundColor:SKEYS.map(sk=>SUBJECTS[sk].color),borderRadius:6,borderSkipped:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw}% done`},backgroundColor:'#1a1927',titleColor:'#eeeaf8',bodyColor:'#a09bc2'}},
+      scales:{
+        x:{ticks:{color:'#a09bc2',font:{size:11,family:'Nunito',weight:'700'}},grid:{display:false},border:{color:'#2e2b45'}},
+        y:{min:0,max:100,ticks:{callback:v=>v+'%',color:'#605c7e',font:{size:10,family:'Nunito'}},grid:{color:'#1a1927'},border:{color:'#2e2b45'}}
+      }
+    }
+  });
+}
+
+function cycleT(i){state[aS][aC].topics[i].status=(state[aS][aC].topics[i].status+1)%3;save();render();}
+function addT(){const v=document.getElementById('newt').value.trim();if(!v)return;state[aS][aC].topics.push({name:v,status:0});document.getElementById('newt').value='';save();render();}
+document.getElementById('newt').addEventListener('keydown',e=>{if(e.key==='Enter')addT();});
+function swS(sk){aS=sk;aC=0;render();}
+function swC(i){aC=i;render();}
+render();
+</script>
+</body>
+</html>
