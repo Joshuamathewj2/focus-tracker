@@ -1,40 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="intro-active">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <meta name="theme-color" content="#0a0e1a"/>
-<title>Study Quest — Loading</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Quest Tracker"/>
+<title>Jeswin — Study Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
-  --bg:#070a14;--cyan:#3ee6d4;--violet:#a78bfa;--gold:#ffc857;--text:#eef1fb;--text2:#8d97bd;
+  --bg:#0a0e1a;--bg2:#121829;--bg3:#1a2238;
+  --border:#23304f;--border2:#324166;
+  --text:#eef1fb;--text2:#8d97bd;--text3:#525d83;
+  --gold:#ffc857;--cyan:#3ee6d4;--violet:#a78bfa;--pink:#ff6fa5;
+  --green:#2de08e;--amber:#ffb347;--red:#ff5d6c;
+  --glow-gold:rgba(255,200,87,0.35);
+  --radius:14px;--rsm:9px;
   --fdisp:'Space Grotesk',sans-serif;--fbody:'Inter',sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);width:100%;height:100%;overflow:hidden;}
-body{
-  font-family:var(--fbody);color:var(--text);
-  display:flex;align-items:center;justify-content:center;
-  position:relative;
+html{background:var(--bg);font-family:var(--fbody);font-size:15px;color:var(--text);}
+body{min-height:100vh;padding-bottom:5.5rem;background:
+  radial-gradient(circle at 15% 0%, rgba(167,139,250,0.10), transparent 45%),
+  radial-gradient(circle at 90% 10%, rgba(62,230,212,0.08), transparent 40%),
+  var(--bg);
 }
 
-/* ===== Ambient deep-space backdrop ===== */
+/* ===== TOP BAR / LEVEL HEADER ===== */
+.topbar{background:linear-gradient(135deg,#1b1340 0%,#2a1a5e 55%,#3a1d6e 100%);padding:14px 16px 16px;position:sticky;top:0;z-index:100;box-shadow:0 4px 24px rgba(0,0,0,0.55);border-bottom:1px solid rgba(255,255,255,0.06);}
+.tb-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-icon{width:38px;height:38px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;}
+.tb-title{font-family:var(--fdisp);font-size:16px;font-weight:800;color:#fff;letter-spacing:0.01em;}
+.tb-sub{font-size:11px;color:rgba(255,255,255,0.6);margin-top:1px;font-weight:600;}
+.streak-chip{display:flex;align-items:center;gap:5px;background:rgba(255,200,87,0.15);border:1px solid rgba(255,200,87,0.35);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:800;color:var(--gold);font-family:var(--fdisp);}
+.lvl-row{display:flex;align-items:center;gap:10px;}
+.lvl-badge{font-family:var(--fdisp);font-size:13px;font-weight:800;color:#fff;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:3px 9px;white-space:nowrap;}
+.xp-track{flex:1;height:10px;background:rgba(0,0,0,0.35);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);position:relative;}
+.xp-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width 0.5s cubic-bezier(0.4,0,0.2,1);position:relative;}
+.xp-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:shine 2.2s ease-in-out infinite;}
+@keyframes shine{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+.xp-label{font-size:10px;color:rgba(255,255,255,0.55);font-weight:700;white-space:nowrap;min-width:64px;text-align:right;}
+
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.metric{background:var(--bg2);padding:13px 8px;text-align:center;position:relative;}
+.mval{font-family:var(--fdisp);font-size:23px;font-weight:800;}
+.mlbl{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;}
+
+.main{max-width:640px;margin:0 auto;padding:16px 12px;}
+.sec-lbl{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+
+/* Subject tabs = "Worlds" */
+.stabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+.stab{padding:8px 14px;border-radius:12px;border:1.5px solid var(--border2);font-size:12px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--text2);transition:all 0.15s;font-family:var(--fbody);display:flex;align-items:center;gap:6px;}
+.stab:hover{border-color:var(--violet);color:var(--text);transform:translateY(-1px);}
+.stab.active{color:#0a0e1a;border-color:transparent;box-shadow:0 4px 14px rgba(0,0,0,0.45);font-weight:800;}
+.stab .sicon{font-size:14px;}
+
+.ctabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.ctab{padding:5px 12px;border-radius:var(--rsm);border:1.5px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;background:var(--bg2);color:var(--text3);transition:all 0.12s;position:relative;font-family:var(--fbody);}
+.ctab:hover{border-color:var(--border2);color:var(--text2);}
+.ctab.active{font-weight:700;}
+.pip{width:7px;height:7px;border-radius:50%;position:absolute;top:2px;right:2px;}
+
+.panel{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--border);background:var(--bg3);}
+.ptitle{font-family:var(--fdisp);font-size:14px;font-weight:700;color:var(--text);}
+.ptag{font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;}
+.cscore{font-family:var(--fdisp);font-size:19px;font-weight:800;}
+.pbar{height:6px;background:var(--border);}
+.pfill{height:100%;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);}
+.tlist{padding:8px;display:flex;flex-direction:column;gap:4px;}
+.trow{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--rsm);border:1.5px solid var(--border);transition:all 0.12s;background:var(--bg2);}
+.trow:active{transform:scale(0.99);}
+.trow.t-done{border-color:#0f4a3a;background:#0a2620;}
+.trow.t-study{border-color:#5a3d00;background:#2a1f00;}
+.tnum{font-size:10px;color:var(--text3);min-width:20px;font-weight:700;font-family:var(--fdisp);}
+.tname{flex:1;font-size:13px;color:var(--text2);font-weight:500;line-height:1.3;}
+.trow.t-done .tname{color:#5eead4;}
+.trow.t-study .tname{color:#fcd34d;}
+.tbtn{font-size:10px;padding:5px 11px;border-radius:12px;border:none;cursor:pointer;white-space:nowrap;font-weight:800;font-family:var(--fbody);transition:all 0.12s;}
+.tbtn:active{transform:scale(0.92);}
+.s0{background:#3b0d10;color:#ff8a93;}
+.s1{background:#3b2700;color:#ffc857;}
+.s2{background:#0c3b2c;color:#3ee6d4;}
+.addrow{display:flex;gap:6px;padding:9px 10px;border-top:1px solid var(--border);background:var(--bg3);}
+.addrow input{flex:1;padding:8px 12px;border:1.5px solid var(--border2);border-radius:var(--rsm);font-size:13px;font-weight:500;background:var(--bg);color:var(--text);outline:none;font-family:var(--fbody);}
+.addrow input:focus{border-color:var(--violet);}
+.addrow input::placeholder{color:var(--text3);}
+.addrow button{padding:8px 14px;border-radius:var(--rsm);border:1.5px solid var(--border2);font-size:12px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--text2);font-family:var(--fbody);}
+.addrow button:hover{border-color:var(--violet);color:var(--violet);}
+
+.chart-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:15px;margin-bottom:14px;}
+.clbl{font-size:11px;font-weight:800;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);font-weight:600;}
+.ld{width:10px;height:10px;border-radius:3px;}
+
+.enc-box{border-radius:var(--radius);padding:14px 16px;font-size:13px;font-weight:700;line-height:1.6;border:1.5px solid;display:flex;align-items:center;gap:10px;}
+.enc-emoji{font-size:22px;flex-shrink:0;}
+
+/* Badges row */
+.badges-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+.badge{flex-shrink:0;width:64px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);opacity:0.35;filter:grayscale(0.6);transition:all 0.25s;}
+.badge.unlocked{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 14px var(--glow-gold);}
+.badge-icon{font-size:22px;}
+.badge-lbl{font-size:8.5px;font-weight:800;color:var(--text2);text-align:center;line-height:1.2;text-transform:uppercase;letter-spacing:0.02em;}
+.badge.unlocked .badge-lbl{color:var(--gold);}
+
+#page-overall{display:none;}
+.ov-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.ov-title{font-size:13px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;}
+.subj-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+.subj-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden;}
+.sc-name{font-family:var(--fdisp);font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.sc-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.sc-fill{height:100%;border-radius:4px;transition:width 0.4s ease;}
+.sc-pct{font-family:var(--fdisp);font-size:21px;font-weight:800;}
+.sc-done{font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;}
+.sc-crown{position:absolute;top:8px;right:10px;font-size:14px;}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:99;box-shadow:0 -4px 20px rgba(0,0,0,0.4);}
+.bnav-btn{flex:1;padding:12px 4px 10px;border:none;background:transparent;cursor:pointer;font-family:var(--fbody);font-size:10px;font-weight:800;color:var(--text3);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color 0.15s;}
+.bnav-btn.active{color:var(--cyan);}
+.bnav-icon{font-size:18px;line-height:1;}
+
+/* Level up toast */
+.lvl-toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-120%);background:linear-gradient(135deg,#ffc857,#ff8a3d);color:#1b1340;font-family:var(--fdisp);font-weight:800;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(255,200,87,0.5);z-index:200;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;}
+.lvl-toast.show{transform:translateX(-50%) translateY(0);}
+
+@media (prefers-reduced-motion: reduce){
+  .xp-fill::after{animation:none;}
+  *{transition-duration:0.01ms !important;}
+}
+
+/* ===== INTRO ANIMATION SCREEN ===== */
+html.intro-active {
+  background:#070a14 !important;
+  width:100% !important;
+  height:100% !important;
+  overflow:hidden !important;
+}
+body.intro-active {
+  background:#070a14 !important;
+  width:100% !important;
+  height:100% !important;
+  overflow:hidden !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  position:relative !important;
+  margin:0 !important;
+  padding:0 !important;
+  color:var(--text);
+  font-family:var(--fbody);
+}
 .sky{position:absolute;inset:0;
   background:
     radial-gradient(circle at 20% 18%, rgba(167,139,250,0.16), transparent 38%),
     radial-gradient(circle at 82% 75%, rgba(62,230,212,0.12), transparent 42%),
     radial-gradient(circle at 50% 100%, rgba(255,200,87,0.06), transparent 50%),
-    var(--bg);
+    #070a14;
 }
 .stars{position:absolute;inset:0;}
 .star{position:absolute;border-radius:50%;background:#fff;opacity:0;animation:twinkle 2.4s ease-in-out infinite;}
 @keyframes twinkle{0%,100%{opacity:0.15;}50%{opacity:0.9;}}
-
-/* ===== Stage ===== */
-.stage{position:relative;width:min(92vw,520px);height:min(92vh,640px);display:flex;flex-direction:column;align-items:center;justify-content:center;}
-
-/* Constellation canvas drawn by spark */
+.stage{position:relative;width:min(92vw,520px);height:min(92vh,640px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;}
 .sigil-wrap{position:relative;width:220px;height:220px;margin-bottom:18px;}
 svg.sigil{width:100%;height:100%;overflow:visible;}
 .sigil-line{
@@ -45,12 +178,9 @@ svg.sigil{width:100%;height:100%;overflow:visible;}
   animation-delay:0.15s;
 }
 @keyframes draw{to{stroke-dashoffset:0;}}
-
 .node{opacity:0;animation:nodeIn 0.4s ease-out forwards;}
 .node circle{fill:var(--gold);filter:drop-shadow(0 0 8px rgba(255,200,87,0.8));}
 @keyframes nodeIn{to{opacity:1;}}
-
-/* spark traveling dot */
 .spark{
   position:absolute;width:10px;height:10px;border-radius:50%;
   background:radial-gradient(circle,#fff 0%,var(--cyan) 45%,transparent 80%);
@@ -60,8 +190,6 @@ svg.sigil{width:100%;height:100%;overflow:visible;}
   animation-delay:0.15s, 1.45s;
   opacity:1;
 }
-
-/* sword/seal icon at center, ignites after sigil completes */
 .seal{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.3);
   width:64px;height:64px;display:flex;align-items:center;justify-content:center;
@@ -82,8 +210,6 @@ svg.sigil{width:100%;height:100%;overflow:visible;}
   0%{opacity:0.9;transform:scale(0.6);}
   100%{opacity:0;transform:scale(2.6);}
 }
-
-/* Name reveal */
 .namewrap{overflow:hidden;}
 .name{
   font-family:var(--fdisp);font-weight:800;
@@ -97,22 +223,17 @@ svg.sigil{width:100%;height:100%;overflow:visible;}
   animation:letterUp 0.65s cubic-bezier(0.22,1,0.36,1) forwards;
 }
 @keyframes letterUp{to{opacity:1;transform:translateY(0);filter:blur(0);}}
-
 .tagline{
   margin-top:10px;font-size:13px;font-weight:600;color:var(--text2);
   letter-spacing:0.14em;text-transform:uppercase;
   opacity:0;animation:fadeUp 0.7s ease-out forwards;animation-delay:2.7s;
 }
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-
-/* presents-style eyebrow */
 .eyebrow{
   font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--text2);
   opacity:0;animation:fadeUp 0.6s ease-out forwards;animation-delay:0s;
   margin-bottom:6px;
 }
-
-/* loading bar at the very end */
 .loadbar-wrap{
   margin-top:26px;width:200px;height:4px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;
   opacity:0;animation:fadeUp 0.5s ease-out forwards;animation-delay:2.9s;
@@ -127,14 +248,11 @@ svg.sigil{width:100%;height:100%;overflow:visible;}
   margin-top:8px;font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--text2);
   opacity:0;animation:fadeUp 0.5s ease-out forwards;animation-delay:3.0s;
 }
-
-/* Whole stage fade-out to hand off to tracker */
 .curtain{
-  position:fixed;inset:0;background:var(--bg);opacity:0;pointer-events:none;z-index:50;
+  position:fixed;inset:0;background:#070a14;opacity:0;pointer-events:none;z-index:50;
   animation:curtainIn 0.6s ease-in forwards;animation-delay:4.3s;
 }
 @keyframes curtainIn{to{opacity:1;}}
-
 .skip{
   position:fixed;bottom:18px;right:18px;z-index:60;
   background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
@@ -143,111 +261,487 @@ svg.sigil{width:100%;height:100%;overflow:visible;}
   opacity:0;animation:fadeUp 0.5s ease-out forwards;animation-delay:1s;
 }
 .skip:hover{color:var(--text);border-color:var(--cyan);}
-
-@media (prefers-reduced-motion: reduce){
-  *{animation-duration:0.01ms !important;animation-delay:0ms !important;}
-}
 </style>
 </head>
-<body>
+<body class="intro-active">
 
-<div class="sky"></div>
-<div class="stars" id="stars"></div>
+<!-- Intro Screen Container -->
+<div id="intro-container">
+  <div class="sky"></div>
+  <div class="stars" id="stars"></div>
 
-<button class="skip" id="skipBtn" onclick="finish()">Skip ›</button>
+  <button class="skip" id="skipBtn" onclick="finishIntro()">Skip ›</button>
 
-<div class="stage">
-  <div class="eyebrow">A Study Quest Production</div>
+  <div class="stage">
+    <div class="eyebrow">A Study Quest Production</div>
 
-  <div class="sigil-wrap">
-    <svg class="sigil" viewBox="0 0 220 220">
-      <defs>
-        <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#3ee6d4"/>
-          <stop offset="100%" stop-color="#a78bfa"/>
-        </linearGradient>
-      </defs>
-      <!-- six-point star / compass sigil path, drawn by the spark -->
-      <path class="sigil-line" d="M110,20 L150,90 L195,95 L150,130 L165,195 L110,160 L55,195 L70,130 L25,95 L70,90 Z"/>
-      <g class="node" style="animation-delay:0.25s"><circle cx="110" cy="20" r="4"/></g>
-      <g class="node" style="animation-delay:0.55s"><circle cx="195" cy="95" r="4"/></g>
-      <g class="node" style="animation-delay:0.85s"><circle cx="165" cy="195" r="4"/></g>
-      <g class="node" style="animation-delay:1.15s"><circle cx="55" cy="195" r="4"/></g>
-      <g class="node" style="animation-delay:1.45s"><circle cx="25" cy="95" r="4"/></g>
-    </svg>
-    <div class="spark" id="spark"></div>
-    <div class="seal">
-      <div class="seal-ring"></div>
-      ⚔️
+    <div class="sigil-wrap">
+      <svg class="sigil" viewBox="0 0 220 220">
+        <defs>
+          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3ee6d4"/>
+            <stop offset="100%" stop-color="#a78bfa"/>
+          </linearGradient>
+        </defs>
+        <!-- six-point star / compass sigil path, drawn by the spark -->
+        <path class="sigil-line" d="M110,20 L150,90 L195,95 L150,130 L165,195 L110,160 L55,195 L70,130 L25,95 L70,90 Z"/>
+        <g class="node" style="animation-delay:0.25s"><circle cx="110" cy="20" r="4"/></g>
+        <g class="node" style="animation-delay:0.55s"><circle cx="195" cy="95" r="4"/></g>
+        <g class="node" style="animation-delay:0.85s"><circle cx="165" cy="195" r="4"/></g>
+        <g class="node" style="animation-delay:1.15s"><circle cx="55" cy="195" r="4"/></g>
+        <g class="node" style="animation-delay:1.45s"><circle cx="25" cy="95" r="4"/></g>
+      </svg>
+      <div class="spark" id="spark"></div>
+      <div class="seal">
+        <div class="seal-ring"></div>
+        ⚔️
+      </div>
     </div>
+
+    <div class="namewrap">
+      <div class="name" id="nameTarget"></div>
+    </div>
+    <div class="tagline">Level up your studies</div>
+
+    <div class="loadbar-wrap"><div class="loadbar"></div></div>
+    <div class="loadlbl">Entering the quest…</div>
   </div>
 
-  <div class="namewrap">
-    <div class="name" id="nameTarget"></div>
-  </div>
-  <div class="tagline">Level up your studies</div>
-
-  <div class="loadbar-wrap"><div class="loadbar"></div></div>
-  <div class="loadlbl">Entering the quest…</div>
+  <div class="curtain"></div>
 </div>
 
-<div class="curtain"></div>
+<!-- Main App Container -->
+<div id="app-container" style="display: none;">
+<div class="lvl-toast" id="lvlToast">⭐ Level Up!</div>
+
+<div class="topbar">
+  <div class="tb-row1">
+    <div class="tb-left">
+      <div class="tb-icon">⚔️</div>
+      <div><div class="tb-title">Study Quest</div><div class="tb-sub">Class 8 — Term I</div></div>
+    </div>
+    <div class="streak-chip" id="streak-chip">🔥 0</div>
+  </div>
+  <div class="lvl-row">
+    <div class="lvl-badge" id="lvl-badge">LVL 1</div>
+    <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-label" id="xp-label">0 / 100 XP</div>
+  </div>
+</div>
+<div class="metrics" id="metrics"></div>
+
+<div id="page-tracker">
+<div class="main">
+  <div class="sec-lbl">🏅 Badges</div>
+  <div class="badges-row" id="badges-row"></div>
+
+  <div class="sec-lbl">🗺️ Choose your world</div>
+  <div class="stabs" id="stabs"></div>
+  <div class="sec-lbl">📖 Chapter</div>
+  <div class="ctabs" id="ctabs"></div>
+  <div class="panel">
+    <div class="panel-hdr">
+      <div><div class="ptitle" id="ptitle">—</div><div class="ptag" id="ptag">Tap a button to update progress</div></div>
+      <div class="cscore" id="cscore">0%</div>
+    </div>
+    <div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+    <div class="tlist" id="tlist"></div>
+    <div class="addrow">
+      <input id="newt" placeholder="Add a topic..." maxlength="70"/>
+      <button onclick="addT()">+ Add</button>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="clbl" id="clbl">Chapter overview</div>
+    <div style="position:relative;height:160px;"><canvas id="ch"></canvas></div>
+    <div class="legend">
+      <div class="li"><div class="ld" style="background:#2de08e"></div>Done</div>
+      <div class="li"><div class="ld" style="background:#ffb347"></div>Studying</div>
+      <div class="li"><div class="ld" style="background:#ff5d6c"></div>Not yet</div>
+    </div>
+  </div>
+  <div class="enc-box" id="enc"></div>
+</div>
+</div>
+
+<div id="page-overall">
+<div class="main">
+  <div class="ov-header"><span class="ov-title">🏆 All Worlds Overview</span></div>
+  <div class="subj-cards" id="subj-cards"></div>
+  <div class="chart-card">
+    <div class="clbl">Overall progress — all subjects</div>
+    <div style="position:relative;height:220px;"><canvas id="ov-ch"></canvas></div>
+    <div class="legend" style="margin-top:10px;">
+      <div class="li"><div class="ld" style="background:#2de08e"></div>Done</div>
+      <div class="li"><div class="ld" style="background:#ffb347"></div>Studying</div>
+      <div class="li"><div class="ld" style="background:#ff5d6c"></div>Not yet</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="bottom-nav">
+  <button class="bnav-btn active" id="nav-tracker" onclick="showPage('tracker')">
+    <span class="bnav-icon">⚔️</span>Quest
+  </button>
+  <button class="bnav-btn" id="nav-overall" onclick="showPage('overall')">
+    <span class="bnav-icon">🏆</span>Overall
+  </button>
+</div>
+</div>
 
 <script>
+const SUBJECTS={
+  'Maths I':{color:'#a78bfa',icon:'🧮',chapters:[
+    {name:'1. Square & Cube',topics:['A Square and A Cube']},
+    {name:'2. Power Play',topics:['Power Play']},
+    {name:'3. Story of Numbers',topics:['A Story of Numbers']},
+    {name:'4. Quadrilaterals',topics:['Quadrilaterals']},
+    {name:'5. Number Play',topics:['Number Play']},
+    {name:'6. Distribute & Multiply',topics:['We Distribute, Yet Things Multiply']},
+    {name:'7. Proportional Reasoning-1',topics:['Proportional Reasoning-1']},
+  ]},
+  'Maths II':{color:'#8b6ff0',icon:'📐',chapters:[
+    {name:'1. Fractions in Disguise',topics:['Fractions in Disguise']},
+    {name:'2. Baudhayana-Pythagoras',topics:['The Baudhayana-Pythagoras Theorem']},
+    {name:'3. Proportional Reasoning-2',topics:['Proportional Reasoning-2']},
+    {name:'4. Geometric Themes',topics:['Exploring Some Geometric Themes']},
+    {name:'5. Dots and Lines',topics:['Tales by Dots and Lines']},
+    {name:'6. Algebra Play',topics:['Algebra Play']},
+    {name:'7. Area',topics:['Area']},
+  ]},
+  'Eng Lit':{color:'#60a5fa',icon:'📚',chapters:[
+    {name:'Unit 1: Wit & Wisdom',topics:['The Wit that Won Hearts','A Concrete Example','Wisdom Paves the Way']},
+    {name:'Unit 2: Values',topics:['A Tale of Valour: Major Somnath Sharma and the Battle of Badgam',"Somebody's Mother",'Verghese Kurien - I Too Had A Dream']},
+    {name:'Unit 3: Mystery & Magic',topics:['The Case of the Fifth Word','The Magic Brush of Dreams','Spectacular Wonders']},
+    {name:'Unit 4: Environment',topics:['The Cherry Tree','Harvest Hymn','Waiting for the Rain']},
+    {name:'Unit 5: Science & Curiosity',topics:['Feathered Friend','Magnifying Glass','Bibha Chowdhuri: The Beam of Light that Lit the Path for Women in Indian Science']},
+  ]},
+  'Eng Grammar':{color:'#38bdf8',icon:'✍️',chapters:[
+    {name:'Block A (1–8)',topics:['Determiners','Prepositions','Sentence Analysis','Auxiliary Verbs','Modals','Linking Verbs','The Complement','Adverbs and Adverbials']},
+    {name:'Comprehension A + Test 01',topics:['The Coming of Pollyanna (Comprehension A)','Worksheets 1–8','Test 01']},
+    {name:'Block B (10–17)',topics:['Conjunctions','Clauses','Infinitives','Participles','Gerund','The Present Tense','The Past Tense','The Future Tense']},
+    {name:'Comprehension B + Test 02',topics:["India's Salt Desert (Comprehension B)",'Worksheets 9–16','Test 02']},
+    {name:'Block C (19–27)',topics:['Relative Clauses','Conditionals','Active and Passive Voice','Direct and Indirect Speech','Affixation','Homophones, Homographs and Homonyms','Idioms','Punctuation','British and American English']},
+    {name:'Comprehension C + Test 03',topics:['Market Day (Comprehension C)','Worksheets 17–25','Test 03']},
+    {name:'Writing Block (29–35)',topics:['Letters and Email','Essay Writing','Story Writing','Writing a Diary Entry','Preparing Posters','Advertisements','The Blue Carbuncle (Comprehension D)','Glossary of Grammar Terms']},
+  ]},
+  'Social I':{color:'#fb923c',icon:'🌍',chapters:[
+    {name:'History: Colonial Era',topics:['1. Europe Eyes Bharat','2. Early Resistance to Colonial Expansion','3. Seeds of Poison','4. The Great War for Independence','5. Nationalistic Fervor Grips Bharat']},
+    {name:'Geography: Agriculture',topics:["6. India's Agricultural Landscape",'7. Understanding Indian Crop Diversity']},
+    {name:'Political Science',topics:['8. Constitution of India']},
+    {name:'Economics',topics:['9. National Economy – A Health Check']},
+  ]},
+  'Social II':{color:'#f97316',icon:'🗺️',chapters:[
+    {name:'History: Freedom Struggle',topics:['10. Men Who Knew No Fear','11. And the Fight Continues','12. The Final Nail in the Coffin','13. Tricolor Replaces Union Jack','14. India Marches Ahead']},
+    {name:'Geography: Sustainability',topics:['15. Our Journey to Sustainability','16. Travel & Transportation in India']},
+    {name:'Political Science',topics:['17. Equity and Diversity','18. India and the world']},
+    {name:'Economics',topics:['19. Foundations of Indian Economy',"20. India's Trading Partners - Who buys and sells with us?"]},
+    {name:'Extras',topics:['Read More','Practice Map']},
+  ]},
+  'Science':{color:'#2de08e',icon:'🔬',chapters:[
+    {name:'1. Investigative World',topics:['Exploring the Investigative World of Science']},
+    {name:'2. Invisible Living World',topics:['The Invisible Living World: Beyond Our Naked Eye']},
+    {name:'3. Health',topics:['Health: The Ultimate Treasure']},
+    {name:'4. Electricity',topics:['Electricity: Magnetic and Heating Effects']},
+    {name:'5. Forces',topics:['Exploring Forces']},
+    {name:'6. Pressure & Storms',topics:['Pressure, Winds, Storms, and Cyclones']},
+    {name:'7. Particulate Matter',topics:['Particulate Nature of Matter']},
+    {name:'8. Elements & Compounds',topics:['Nature of Matter: Elements, Compounds, and Mixtures']},
+    {name:'9. Solutes & Solutions',topics:['The Amazing World of Solutes, Solvents, and Solutions']},
+    {name:'10. Light',topics:['Light: Mirrors and Lenses']},
+    {name:'11. Time & Skies',topics:['Keeping Time with the Skies']},
+    {name:'12. Nature in Harmony',topics:['How Nature Works in Harmony']},
+    {name:'13. Planet Earth',topics:['Our Home: Earth, a Unique Life Sustaining Planet']},
+  ]},
+};
+const SKEYS=Object.keys(SUBJECTS);
+const ENC=[
+  {t:'Nothing started yet — every legend begins at level 1. Open the book and take your first step!',e:'🌱',c:'#2d0f10',b:'#7f1d1d',tx:'#ffb3b8'},
+  {t:'10% cleared! The quest has begun. Small steps still move the map forward!',e:'🗡️',c:'#2d1a00',b:'#78350f',tx:'#ffc857'},
+  {t:'20% cleared! You are building momentum — keep stacking those wins!',e:'🛡️',c:'#2d1a00',b:'#78350f',tx:'#ffc857'},
+  {t:'30% cleared! Nearly a third down. Your focus is paying off!',e:'⚡',c:'#2d1a00',b:'#78350f',tx:'#ffc857'},
+  {t:'40% cleared! Closing in on the halfway boss. Keep pushing!',e:'🔥',c:'#1c2300',b:'#365314',tx:'#bbf7d0'},
+  {t:'50% cleared! Halfway checkpoint unlocked. You have proven you can finish this!',e:'🏁',c:'#1c2300',b:'#365314',tx:'#bbf7d0'},
+  {t:'60% cleared! Past the midpoint — the final zone is in sight!',e:'🚀',c:'#1c2300',b:'#365314',tx:'#bbf7d0'},
+  {t:'70% cleared! Strong progress, hero. The home stretch starts now!',e:'⭐',c:'#0a2620',b:'#065f46',tx:'#5eead4'},
+  {t:'80% cleared! Almost a full clear. Just a few more topics to go!',e:'💎',c:'#0a2620',b:'#065f46',tx:'#5eead4'},
+  {t:'90% cleared! SO close to 100%! One last push for the full clear!',e:'👑',c:'#0a2620',b:'#065f46',tx:'#5eead4'},
+  {t:'100% CLEARED! Every topic conquered. Walk into that exam like the boss you are!',e:'🏆',c:'#0a2620',b:'#059669',tx:'#34d399'},
+];
+const BADGES=[
+  {id:'first',icon:'🌱',lbl:'First Step',check:s=>totalDone()>=1},
+  {id:'streak3',icon:'🔥',lbl:'3 Day Streak',check:s=>state.streak>=3},
+  {id:'quarter',icon:'⚡',lbl:'25% World',check:s=>SKEYS.some(sk=>subjScore(sk)>=25)},
+  {id:'halfsubj',icon:'🛡️',lbl:'Half a World',check:s=>SKEYS.some(sk=>subjScore(sk)>=50)},
+  {id:'fullsubj',icon:'👑',lbl:'World Cleared',check:s=>SKEYS.some(sk=>subjScore(sk)>=100)},
+  {id:'lvl5',icon:'🚀',lbl:'Level 5',check:s=>getLevel(state.xp).level>=5},
+  {id:'half',icon:'💎',lbl:'Halfway Hero',check:s=>overallScore()>=50},
+  {id:'champ',icon:'🏆',lbl:'Full Champion',check:s=>overallScore()>=100},
+];
+const SAVE_KEY='class8_quest_v1';
+function initState(){
+  const saved=localStorage.getItem(SAVE_KEY);
+  if(saved){try{
+    const parsed=JSON.parse(saved);
+    if(parsed && parsed.subjects) return parsed;
+  }catch(e){}}
+  const subjects={};
+  SKEYS.forEach(sk=>{subjects[sk]=SUBJECTS[sk].chapters.map(ch=>({name:ch.name,topics:ch.topics.map(t=>({name:t,status:0}))}));});
+  return {subjects,xp:0,streak:0,lastActive:null,badges:[]};
+}
+let state=initState(),aS=SKEYS[0],aC=0,chartInst=null,ovChartInst=null;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){}}
+const tScore=t=>t.status===2?100:t.status===1?50:0;
+const chapScore=(sk,ci)=>{const ts=state.subjects[sk][ci].topics;return ts.length?Math.round(ts.reduce((a,t)=>a+tScore(t),0)/ts.length):0;};
+const subjScore=sk=>Math.round(state.subjects[sk].reduce((a,_,i)=>a+chapScore(sk,i),0)/state.subjects[sk].length);
+const overallScore=()=>Math.round(SKEYS.reduce((a,sk)=>a+subjScore(sk),0)/SKEYS.length);
+const totalDone=()=>SKEYS.reduce((a,sk)=>a+state.subjects[sk].reduce((b,ch)=>b+ch.topics.filter(t=>t.status===2).length,0),0);
+const totalAll=()=>SKEYS.reduce((a,sk)=>a+state.subjects[sk].reduce((b,ch)=>b+ch.topics.length,0),0);
+const pipCol=sc=>sc===0?'#ff5d6c':sc<60?'#ffb347':'#2de08e';
+const scoreCol=sc=>sc<40?'#ff5d6c':sc<70?'#ffb347':'#2de08e';
+
+/* Level curve: level n needs n*100 XP to clear (cumulative) */
+function getLevel(xp){
+  let level=1,need=100,floor=0;
+  while(xp>=floor+need){floor+=need;level++;need=level*100;}
+  return {level,into:xp-floor,need,floor};
+}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function bumpStreak(){
+  const today=todayStr();
+  if(state.lastActive===today)return;
+  const y=new Date();y.setDate(y.getDate()-1);
+  const yest=y.toISOString().slice(0,10);
+  state.streak=(state.lastActive===yest)?state.streak+1:1;
+  state.lastActive=today;
+}
+function awardXP(delta){
+  const before=getLevel(state.xp).level;
+  state.xp=Math.max(0,state.xp+delta);
+  const after=getLevel(state.xp).level;
+  if(after>before)showLevelUp(after);
+}
+function showLevelUp(lvl){
+  const t=document.getElementById('lvlToast');
+  t.textContent='⭐ Level Up! You reached LVL '+lvl;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+function checkBadges(){
+  let newly=[];
+  BADGES.forEach(b=>{
+    if(!state.badges.includes(b.id) && b.check(state)){
+      state.badges.push(b.id);
+      newly.push(b);
+    }
+  });
+  return newly;
+}
+
+function showPage(p){
+  document.getElementById('page-tracker').style.display=p==='tracker'?'block':'none';
+  document.getElementById('page-overall').style.display=p==='overall'?'block':'none';
+  document.getElementById('nav-tracker').classList.toggle('active',p==='tracker');
+  document.getElementById('nav-overall').classList.toggle('active',p==='overall');
+  if(p==='overall')renderOverall();
+}
+
+function renderHeader(){
+  const lv=getLevel(state.xp);
+  document.getElementById('lvl-badge').textContent='LVL '+lv.level;
+  document.getElementById('xp-fill').style.width=Math.round(lv.into/lv.need*100)+'%';
+  document.getElementById('xp-label').textContent=lv.into+' / '+lv.need+' XP';
+  document.getElementById('streak-chip').textContent='🔥 '+state.streak;
+}
+
+function renderBadges(){
+  document.getElementById('badges-row').innerHTML=BADGES.map(b=>{
+    const unlocked=state.badges.includes(b.id);
+    return `<div class="badge${unlocked?' unlocked':''}"><div class="badge-icon">${b.icon}</div><div class="badge-lbl">${b.lbl}</div></div>`;
+  }).join('');
+}
+
+function render(){
+  checkBadges();
+  renderHeader();
+  renderBadges();
+  const ov=overallScore(),td=totalDone(),ta=totalAll();
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="mval" style="color:${scoreCol(ov)}">${ov}%</div><div class="mlbl">Overall</div></div>
+    <div class="metric"><div class="mval" style="color:#2de08e">${td}</div><div class="mlbl">Done</div></div>
+    <div class="metric"><div class="mval" style="color:#525d83">${ta-td}</div><div class="mlbl">Left</div></div>`;
+  const col=SUBJECTS[aS].color;
+  document.getElementById('stabs').innerHTML=SKEYS.map(sk=>{
+    const sc=subjScore(sk),isA=sk===aS,c=SUBJECTS[sk].color,icon=SUBJECTS[sk].icon;
+    return `<button class="stab${isA?' active':''}" style="${isA?'background:'+c+';border-color:'+c:'color:#8d97bd'}" onclick="swS('${sk}')"><span class="sicon">${icon}</span>${sk} <span style="opacity:0.75;font-size:10px;font-weight:700">${sc}%</span></button>`;
+  }).join('');
+  document.getElementById('ctabs').innerHTML=state.subjects[aS].map((ch,i)=>{
+    const sc=chapScore(aS,i),isA=i===aC;
+    return `<button class="ctab${isA?' active':''}" style="${isA?'border-color:'+col+';color:'+col:''}" onclick="swC(${i})">${ch.name}<span class="pip" style="background:${pipCol(sc)}"></span></button>`;
+  }).join('');
+  const ch=state.subjects[aS][aC],sc=chapScore(aS,aC);
+  document.getElementById('ptitle').textContent=ch.name;
+  document.getElementById('ptag').textContent=aS+' — Tap any button to update';
+  const b=document.getElementById('cscore');b.textContent=sc+'%';b.style.color=scoreCol(sc);
+  const f=document.getElementById('pfill');f.style.width=sc+'%';f.style.background=scoreCol(sc);
+  document.getElementById('tlist').innerHTML=ch.topics.map((t,i)=>{
+    const rc=t.status===2?'t-done':t.status===1?'t-study':'';
+    return `<div class="trow ${rc}"><span class="tnum">${String(i+1).padStart(2,'0')}</span><span class="tname">${t.name}</span><button class="tbtn s${t.status}" onclick="cycleT(${i})">${['Not yet','Studying','Done'][t.status]}</button></div>`;
+  }).join('');
+  document.getElementById('clbl').textContent=aS+' — chapter breakdown';
+  const labels=state.subjects[aS].map(c=>c.name.length>14?c.name.slice(0,14)+'…':c.name);
+  const done=state.subjects[aS].map((_,i)=>{const ts=state.subjects[aS][i].topics;return ts.length?Math.round(ts.filter(t=>t.status===2).length/ts.length*100):0;});
+  const part=state.subjects[aS].map((_,i)=>{const ts=state.subjects[aS][i].topics;return ts.length?Math.round(ts.filter(t=>t.status===1).length/ts.length*100):0;});
+  const none=state.subjects[aS].map((_,i)=>{const ts=state.subjects[aS][i].topics;return ts.length?Math.round(ts.filter(t=>t.status===0).length/ts.length*100):0;});
+  if(chartInst)chartInst.destroy();
+  chartInst=new Chart(document.getElementById('ch'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Done',data:done,backgroundColor:'#2de08e',borderRadius:4,stack:'s'},
+      {label:'Studying',data:part,backgroundColor:'#ffb347',stack:'s'},
+      {label:'Not yet',data:none,backgroundColor:'#ff5d6c',stack:'s'},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw}%`},backgroundColor:'#121829',titleColor:'#eef1fb',bodyColor:'#8d97bd'}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#525d83',font:{size:11,family:'Inter'}},grid:{display:false},border:{color:'#23304f'}},
+        y:{stacked:true,min:0,max:100,ticks:{callback:v=>v+'%',color:'#525d83',font:{size:10,family:'Inter'}},grid:{color:'#121829'},border:{color:'#23304f'}}
+      }
+    }
+  });
+  const r=ENC[Math.min(Math.floor(sc/10),10)];
+  const el=document.getElementById('enc');
+  el.style.background=r.c;el.style.borderColor=r.b;el.style.color=r.tx;
+  el.innerHTML='<span class="enc-emoji">'+r.e+'</span><span>'+r.t+'</span>';
+  save();
+}
+
+function renderOverall(){
+  document.getElementById('subj-cards').innerHTML=SKEYS.map(sk=>{
+    const sc=subjScore(sk),col=SUBJECTS[sk].color,icon=SUBJECTS[sk].icon;
+    const td=state.subjects[sk].reduce((a,ch)=>a+ch.topics.filter(t=>t.status===2).length,0);
+    const ta=state.subjects[sk].reduce((a,ch)=>a+ch.topics.length,0);
+    return `<div class="subj-card">
+      ${sc>=100?'<div class="sc-crown">👑</div>':''}
+      <div class="sc-name" style="color:${col}">${icon} ${sk}</div>
+      <div class="sc-bar"><div class="sc-fill" style="width:${sc}%;background:${col}"></div></div>
+      <div class="sc-pct" style="color:${scoreCol(sc)}">${sc}%</div>
+      <div class="sc-done">${td} of ${ta} done</div>
+    </div>`;
+  }).join('');
+  if(ovChartInst)ovChartInst.destroy();
+  ovChartInst=new Chart(document.getElementById('ov-ch'),{
+    type:'bar',
+    data:{labels:SKEYS,datasets:[
+      {label:'Done %',data:SKEYS.map(sk=>subjScore(sk)),backgroundColor:SKEYS.map(sk=>SUBJECTS[sk].color),borderRadius:6,borderSkipped:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw}% done`},backgroundColor:'#121829',titleColor:'#eef1fb',bodyColor:'#8d97bd'}},
+      scales:{
+        x:{ticks:{color:'#8d97bd',font:{size:10,family:'Inter',weight:'700'}},grid:{display:false},border:{color:'#23304f'}},
+        y:{min:0,max:100,ticks:{callback:v=>v+'%',color:'#525d83',font:{size:10,family:'Inter'}},grid:{color:'#121829'},border:{color:'#23304f'}}
+      }
+    }
+  });
+}
+
+function cycleT(i){
+  const t=state.subjects[aS][aC].topics[i];
+  const prevStatus=t.status;
+  t.status=(t.status+1)%3;
+  bumpStreak();
+  if(t.status===2 && prevStatus!==2)awardXP(15);
+  else if(t.status===1 && prevStatus===0)awardXP(5);
+  else if(t.status===0 && prevStatus===2)awardXP(-15);
+  else if(t.status===0 && prevStatus===1)awardXP(-5);
+  render();
+}
+function addT(){const v=document.getElementById('newt').value.trim();if(!v)return;state.subjects[aS][aC].topics.push({name:v,status:0});document.getElementById('newt').value='';render();}
+document.getElementById('newt').addEventListener('keydown',e=>{if(e.key==='Enter')addT();});
+function swS(sk){aS=sk;aC=0;render();}
+function swC(i){aC=i;render();}
+render();
+
+/* ===== INTRO ANIMATION SCRIPT ===== */
 /* Build the spark's travel path to match the sigil exactly */
 const spark = document.getElementById('spark');
-spark.style.offsetPath = "path('M110,20 L150,90 L195,95 L150,130 L165,195 L110,160 L55,195 L70,130 L25,95 L70,90 Z')";
-spark.style.offsetDistance = '0%';
-spark.style.left = '0';
-spark.style.top = '0';
-spark.style.animationName = 'sparkMove, sparkFade';
-const styleTag = document.createElement('style');
-styleTag.textContent = `
-@keyframes sparkMove{ from{ offset-distance: 0%; } to{ offset-distance: 100%; } }
-@keyframes sparkFade{ to{ opacity:0; } }
-.spark{ animation-timing-function: cubic-bezier(0.65,0,0.35,1), ease-in; animation-duration:1.7s,0.4s; animation-delay:0.15s,1.45s; animation-fill-mode:forwards; }
-`;
-document.head.appendChild(styleTag);
+if (spark) {
+  spark.style.offsetPath = "path('M110,20 L150,90 L195,95 L150,130 L165,195 L110,160 L55,195 L70,130 L25,95 L70,90 Z')";
+  spark.style.offsetDistance = '0%';
+  spark.style.left = '0';
+  spark.style.top = '0';
+  spark.style.animationName = 'sparkMove, sparkFade';
+  const styleTag = document.createElement('style');
+  styleTag.textContent = `
+  @keyframes sparkMove{ from{ offset-distance: 0%; } to{ offset-distance: 100%; } }
+  @keyframes sparkFade{ to{ opacity:0; } }
+  .spark{ animation-timing-function: cubic-bezier(0.65,0,0.35,1), ease-in; animation-duration:1.7s,0.4s; animation-delay:0.15s,1.45s; animation-fill-mode:forwards; }
+  `;
+  document.head.appendChild(styleTag);
+}
 
 /* Letter-by-letter name reveal */
 const NAME = "JESWIN";
 const target = document.getElementById('nameTarget');
-[...NAME].forEach((ch,i)=>{
-  const span = document.createElement('span');
-  span.textContent = ch;
-  span.style.animationDelay = (1.85 + i*0.09) + 's';
-  target.appendChild(span);
-});
+if (target) {
+  [...NAME].forEach((ch,i)=>{
+    const span = document.createElement('span');
+    span.textContent = ch;
+    span.style.animationDelay = (1.85 + i*0.09) + 's';
+    target.appendChild(span);
+  });
+}
 
 /* Scatter ambient stars */
 const starsWrap = document.getElementById('stars');
-for(let i=0;i<60;i++){
-  const s = document.createElement('div');
-  s.className='star';
-  const size = Math.random()*2+0.6;
-  s.style.width = size+'px';
-  s.style.height = size+'px';
-  s.style.left = Math.random()*100+'%';
-  s.style.top = Math.random()*100+'%';
-  s.style.animationDelay = (Math.random()*2.4)+'s';
-  s.style.animationDuration = (1.8+Math.random()*2)+'s';
-  starsWrap.appendChild(s);
+if (starsWrap) {
+  for(let i=0;i<60;i++){
+    const s = document.createElement('div');
+    s.className='star';
+    const size = Math.random()*2+0.6;
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    s.style.left = Math.random()*100+'%';
+    s.style.top = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*2.4)+'s';
+    s.style.animationDuration = (1.8+Math.random()*2)+'s';
+    starsWrap.appendChild(s);
+  }
 }
 
 /* Hand off to the tracker after the sequence (or on click/skip) */
 let handed = false;
-function finish(){
+function finishIntro(){
   if(handed) return;
   handed = true;
-  document.body.style.transition = 'opacity 0.5s ease';
-  document.body.style.opacity = '0';
+  
+  const introContainer = document.getElementById('intro-container');
+  if (introContainer) {
+    introContainer.style.transition = 'opacity 0.5s ease';
+    introContainer.style.opacity = '0';
+  }
+  
   setTimeout(()=>{
-    // Change this redirect target to your tracker file/page if hosted separately
-    window.location.href = 'tracker.html';
+    if (introContainer) {
+      introContainer.style.display = 'none';
+    }
+    document.documentElement.classList.remove('intro-active');
+    document.body.classList.remove('intro-active');
+    
+    const appContainer = document.getElementById('app-container');
+    if (appContainer) {
+      appContainer.style.display = 'block';
+      // Trigger render so Chart.js can size and draw properly
+      render();
+    }
   }, 480);
 }
-setTimeout(finish, 4900);
-document.querySelector('.stage').addEventListener('click', finish);
+setTimeout(finishIntro, 4900);
+const stageEl = document.querySelector('.stage');
+if (stageEl) {
+  stageEl.addEventListener('click', finishIntro);
+}
 </script>
 </body>
 </html>
